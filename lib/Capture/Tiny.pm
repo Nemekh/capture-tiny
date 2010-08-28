@@ -350,7 +350,7 @@ __END__
 
 = NAME
 
-Capture::Tiny - Capture STDOUT and STDERR from Perl, XS or external programs
+Capture::Tiny - Capture STDOUT, STDERR and return values from Perl, XS or external programs
 
 = VERSION
 
@@ -360,19 +360,19 @@ This documentation describes version %%VERSION%%.
 
     use Capture::Tiny qw/capture tee capture_merged tee_merged/;
 
-    ($stdout, $stderr) = capture {
+    ($stdout, $stderr, @return) = capture {
       # your code here
     };
 
-    ($stdout, $stderr) = tee {
+    ($stdout, $stderr, @return) = tee {
       # your code here
     };
 
-    $merged = capture_merged {
+    ($merged, @return) = capture_merged {
       # your code here
     };
 
-    $merged = tee_merged {
+    ($merged, @return) = tee_merged {
       # your code here
     };
 
@@ -380,10 +380,11 @@ This documentation describes version %%VERSION%%.
 
 Capture::Tiny provides a simple, portable way to capture anything sent to
 STDOUT or STDERR, regardless of whether it comes from Perl, from XS code or
-from an external program.  Optionally, output can be teed so that it is
-captured while being passed through to the original handles.  Yes, it even
-works on Windows.  Stop guessing which of a dozen capturing modules to use in
-any particular situation and just use this one.
+from an external program.  Return values of executed code are captured as well.
+Optionally, output can be teed so that it is captured while being passed through
+to the original handles.  Yes, it even works on Windows.  Stop guessing which of
+a dozen capturing modules to use in any particular situation and just use this
+one.
 
 This module was heavily inspired by [IO::CaptureOutput], which provides
 similar functionality without the ability to tee output and with more
@@ -395,23 +396,25 @@ The following functions are available.  None are exported by default.
 
 == capture
 
-  ($stdout, $stderr) = capture \&code;
+  ($stdout, $stderr, @return) = capture \&code;
   $stdout = capture \&code;
 
 The {capture} function takes a code reference and returns what is sent to
-STDOUT and STDERR.  In scalar context, it returns only STDOUT.  If no output
-was received, returns an empty string.  Regardless of context, all output is
-captured -- nothing is passed to the existing handles.
+STDOUT and STDERR as well as return values of the executed code.  In scalar
+context, it returns only STDOUT.  If no output was received, returns an empty
+string.  Regardless of context, all output is captured -- nothing is passed to
+the existing handles.
 
 It is prototyped to take a subroutine reference as an argument. Thus, it
 can be called in block form:
 
-  ($stdout, $stderr) = capture {
+  ($stdout, $stderr, @return) = capture {
     # your code here ...
   };
 
 == capture_merged
 
+  ($merged, @return) = capture_merged \&code;
   $merged = capture_merged \&code;
 
 The {capture_merged} function works just like {capture} except STDOUT and
@@ -424,7 +427,7 @@ properly ordered due to buffering.
 
 == tee
 
-  ($stdout, $stderr) = tee \&code;
+  ($stdout, $stderr, @return) = tee \&code;
   $stdout = tee \&code;
 
 The {tee} function works just like {capture}, except that output is captured
@@ -433,6 +436,7 @@ may be called in block form.
 
 == tee_merged
 
+  ($merged, @return) = tee_merged \&code;
   $merged = tee_merged \&code;
 
 The {tee_merged} function works just like {capture_merged} except that output

@@ -293,7 +293,7 @@ sub _capture_tee {
   _debug( "# redirecting in parent ...\n" );
   _open_std( $stash->{new} );
   # execute user provided code
-  my ($exit_code, $error);
+  my ($exit_code, $error, @user_code_result);
   {
     local *STDIN = *CT_ORIG_STDIN if $localize{stdin}; # get original, not proxy STDIN
     local *STDERR = *STDOUT if $merge; # minimize buffer mixups during $code
@@ -301,7 +301,7 @@ sub _capture_tee {
     _relayer(\*STDOUT, $layers{stdout});
     _relayer(\*STDERR, $layers{stderr}) unless $merge;
     _debug( "# running code $code ...\n" );
-    eval { $code->() };
+    @user_code_result = eval { $code->() };
     $exit_code = $?; # save this for later
     $error = $@; # save this for later
   }
@@ -323,7 +323,7 @@ sub _capture_tee {
   die $error if $error;
   _debug( "# ending _capture_tee with (@_)...\n" );
   return $got_out if $merge;
-  return wantarray ? ($got_out, $got_err) : $got_out;
+  return wantarray ? ($got_out, $got_err, @user_code_result) : $got_out;
 }
 
 #--------------------------------------------------------------------------#
